@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord Webhook Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        discord: {
+                            bg: '#36393f',
+                            sidebar: '#2f3136',
+                            element: '#202225',
+                            hover: '#40444b',
+                            blurple: '#5865F2',
+                            blurpleHover: '#4752C4',
+                            green: '#3ba55c',
+                            red: '#ed4245',
+                            text: '#dcddde',
+                            muted: '#72767d',
+                            input: '#40444b'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #36393f; color: #dcddde; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .discord-input {
+            background-color: #202225;
+            border: 1px solid #202225;
+            transition: all 0.2s;
+        }
+        .discord-input:focus {
+            border-color: #5865F2;
+            outline: none;
+        }
+        #jsonEditor {
+            font-family: Consolas, Monaco, monospace;
+            background-color: #202225;
+            color: #a9b7c6;
+        }
+    </style>
+</head>
+<body class="bg-discord-bg min-h-screen text-discord-text font-sans flex flex-col">
+
+<header class="bg-discord-element p-4 shadow-md flex justify-between items-center border-b border-black/20 sticky top-0 z-50">
+    <div class="flex items-center gap-2">
+        <i class="fa-brands fa-discord text-discord-blurple text-2xl"></i>
+        <h1 class="font-bold text-lg tracking-wide text-white">Webhook Manager</h1>
+    </div>
+    <a href="https://github.com/Zedait" target="_blank" class="text-xs text-discord-muted hover:text-white transition">
+        <i class="fa-brands fa-github mr-1"></i> GitHub
+    </a>
+</header>
+
+<div class="flex flex-col md:flex-row flex-1">
+
+    <div class="w-full md:w-1/2 lg:w-5/12 bg-discord-sidebar flex flex-col border-r border-black/20 relative z-10">
+
+        <div class="p-5 border-b border-black/10">
+            <label class="block text-xs font-bold text-discord-muted uppercase mb-2">Webhook URL</label>
+            <div class="relative">
+                <input type="text" id="webhookUrl" placeholder="https://discord.com/api/webhooks/..."
+                       class="w-full bg-discord-element text-white p-3 rounded text-sm focus:ring-2 ring-discord-blurple outline-none transition">
+                <i class="fa-solid fa-link absolute right-3 top-3.5 text-discord-muted"></i>
+            </div>
+        </div>
+
+        <div class="flex px-5 pt-2 gap-4 border-b border-black/10">
+            <button onclick="switchTab('visual')" id="tabVisual" class="pb-2 text-sm font-medium text-white border-b-2 border-discord-blurple transition">Visual Editor</button>
+            <button onclick="switchTab('json')" id="tabJson" class="pb-2 text-sm font-medium text-discord-muted hover:text-white border-b-2 border-transparent transition">JSON Editor</button>
+        </div>
+
+        <div class="p-5 space-y-4 pb-24">
+
+            <div id="visualBuilder" class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="label-text">Bot Name</label>
+                        <input type="text" id="username" class="discord-input w-full p-2 rounded text-sm mt-1" placeholder="Spidey Bot">
+                    </div>
+                    <div>
+                        <label class="label-text">Avatar URL</label>
+                        <input type="text" id="avatarUrl" class="discord-input w-full p-2 rounded text-sm mt-1" placeholder="https://...">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="label-text">Message Content</label>
+                    <textarea id="content" rows="2" class="discord-input w-full p-2 rounded text-sm mt-1" placeholder="Herkese merhaba!"></textarea>
+                </div>
+
+                <div class="border-t border-white/10 my-4"></div>
+
+                <h3 class="text-xs font-bold text-discord-muted uppercase">Embed Ayarları</h3>
+
+                <div>
+                    <label class="label-text">Title</label>
+                    <input type="text" id="embedTitle" class="discord-input w-full p-2 rounded text-sm mt-1">
+                </div>
+
+                <div>
+                    <label class="label-text">Description</label>
+                    <textarea id="embedDesc" rows="3" class="discord-input w-full p-2 rounded text-sm mt-1"></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="label-text">Color</label>
+                        <div class="flex gap-2 items-center">
+                            <input type="color" id="embedColorPicker" class="h-9 w-12 cursor-pointer rounded" value="#5865F2">
+                            <input type="text" id="embedColor" class="discord-input w-full p-2 rounded text-sm" value="#5865F2">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="label-text">Footer</label>
+                        <input type="text" id="embedFooter" class="discord-input w-full p-2 rounded text-sm mt-1">
+                    </div>
+                </div>
+            </div>
+
+            <div id="jsonEditorContainer" class="hidden">
+                <textarea id="jsonInput" class="w-full h-96 p-4 rounded bg-discord-element text-sm font-mono border border-black/20 focus:border-discord-blurple outline-none resize-none"></textarea>
+            </div>
+
+        </div>
+
+        <div class="p-4 bg-discord-element border-t border-black/10 flex justify-between items-center sticky bottom-0 z-40">
+            <span id="statusMessage" class="text-xs text-discord-muted italic"> </span>
+            <button onclick="sendWebhook()" class="bg-discord-blurple hover:bg-discord-blurpleHover text-white px-6 py-2 rounded font-medium transition flex items-center gap-2">
+                <i class="fa-solid fa-paper-plane"></i> Send
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+const inputs = {
+    username: document.getElementById('username'),
+    avatar: document.getElementById('avatarUrl'),
+    content: document.getElementById('content'),
+    embedTitle: document.getElementById('embedTitle'),
+    embedDesc: document.getElementById('embedDesc'),
+    embedColor: document.getElementById('embedColor'),
+    embedColorPicker: document.getElementById('embedColorPicker'),
+    embedFooter: document.getElementById('embedFooter'),
+    webhookUrl: document.getElementById('webhookUrl'),
+    jsonInput: document.getElementById('jsonInput')
+};
+
+Object.values(inputs).forEach(i => i && i.addEventListener('input', updatePreview));
+
+inputs.embedColorPicker.addEventListener('input', e => {
+    inputs.embedColor.value = e.target.value;
+    updatePreview();
+});
+
+inputs.embedColor.addEventListener('input', e => {
+    inputs.embedColorPicker.value = e.target.value;
+    updatePreview();
+});
+
+function buildPayload() {
+    const payload = {};
+    if (inputs.username.value) payload.username = inputs.username.value;
+    if (inputs.avatar.value) payload.avatar_url = inputs.avatar.value;
+    if (inputs.content.value) payload.content = inputs.content.value;
+
+    if (inputs.embedTitle.value || inputs.embedDesc.value || inputs.embedFooter.value) {
+        payload.embeds = [{
+            title: inputs.embedTitle.value || undefined,
+            description: inputs.embedDesc.value || undefined,
+            color: parseInt(inputs.embedColor.value.replace('#',''),16),
+            footer: inputs.embedFooter.value ? { text: inputs.embedFooter.value } : undefined
+        }];
+    }
+    return payload;
+}
+
+async function sendWebhook() {
+    if (!inputs.webhookUrl.value) return;
+    await fetch(inputs.webhookUrl.value, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(buildPayload())
+    });
+}
+
+function updatePreview() {}
+</script>
+
+</body>
+</html>
